@@ -12,6 +12,7 @@ import {
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./screens/Login";
 import Register from "./screens/Register";
+import * as Location from "expo-location";
 
 const RootStack = createNativeStackNavigator();
 const navigationRef = createNavigationContainerRef();
@@ -23,6 +24,8 @@ function navigate(name, params) {
 }
 
 function HomeScreen() {
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,8 +35,18 @@ function HomeScreen() {
    */
 
   useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
     getMovies();
-  });
+  }, []);
 
   /**
    * @description Callback for searchButtonPressed()
